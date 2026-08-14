@@ -1,26 +1,169 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  /* Colors */
+  --color-background: #0B0B0F;
+  --color-foreground: #FAFAFA;
+  --color-ink: #0B0B0F;
+  --color-ink-light: #1A1A20;
+  --color-ink-muted: #2A2A30;
+  --color-purple: #7C3AED;
+  --color-purple-dark: #6D28D9;
+  --color-purple-light: #8B5CF6;
+  --color-purple-lighter: #A78BFA;
+  --color-purple-pale: #EDE9FE;
+  --color-green: #22C55E;
+  --color-green-dark: #16A34A;
+  --color-green-light: #4ADE80;
+  --color-green-lighter: #86EFAC;
+  --color-green-pale: #DCFCE7;
+  --color-white: #FAFAFA;
+  
+  /* Grays */
+  --color-gray-50: #F9FAFB;
+  --color-gray-100: #F3F4F6;
+  --color-gray-200: #E5E7EB;
+  --color-gray-300: #D1D5DB;
+  --color-gray-400: #9CA3AF;
+  --color-gray-500: #6B7280;
+  --color-gray-600: #4B5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1F2937;
+  --color-gray-900: #111827;
+  
+  /* Gradients */
+  --color-gradient-primary: linear-gradient(135deg, #7C3AED, #8B5CF6);
+  --color-gradient-success: linear-gradient(135deg, #22C55E, #4ADE80);
+  --color-gradient-brand: linear-gradient(135deg, #7C3AED 0%, #22C55E 100%);
+  
+  /* Shadows */
+  --shadow-glow: 0 0 60px rgba(124, 58, 237, 0.15);
+  --shadow-glow-lg: 0 0 100px rgba(124, 58, 237, 0.2);
+  
+  /* Fonts */
+  --font-family-sans: var(--font-poppins), 'Poppins', system-ui, -apple-system, sans-serif;
+  --font-family-mono: var(--font-jetbrains-mono), 'Jetbrains Mono', ui-monospace, monospace;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@layer base {
+  * {
+    @apply border-ink-muted;
+  }
+  
+  * a, * button {
+    cursor: pointer;
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-family-sans);
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: #1A1A20;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: #2A2A30;
+    border-radius: 9999px;
+    cursor: grab;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(124, 58, 237, 0.5);
+  }
+  
+  ::-webkit-scrollbar-thumb:active {
+    cursor: grabbing;
+  }
+
+  /* Selection */
+  ::selection {
+    background-color: rgba(124, 58, 237, 0.3);
+    color: #FAFAFA;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  .container-custom {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .gradient-text {
+    background: var(--color-gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .glow {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .glow-lg {
+    box-shadow: var(--shadow-glow-lg);
+  }
+
+  .prose-formbox .lead {
+    @apply text-base leading-8 text-gray-400;
+  }
+
+  .prose-formbox .legal-section {
+    @apply mt-12 border-t border-white/[0.06] pt-10;
+  }
+
+  .prose-formbox .legal-section:first-of-type {
+    @apply mt-10 border-t-0 pt-0;
+  }
+
+  .prose-formbox h2 {
+    @apply text-xl font-semibold tracking-[-0.02em] text-white;
+  }
+
+  .prose-formbox h3 {
+    @apply mt-7 text-base font-semibold text-gray-300;
+  }
+
+  .prose-formbox .legal-content {
+    @apply mt-5 space-y-5 text-sm leading-7 text-gray-500;
+  }
+
+  .prose-formbox p {
+    @apply text-sm leading-7 text-gray-500;
+  }
+
+  .prose-formbox ul {
+    @apply list-disc space-y-3 pl-5 text-sm leading-7 text-gray-500;
+  }
+
+  .prose-formbox li {
+    @apply pl-1;
+  }
+}
+
+@layer utilities {
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .animate-pulse-slow {
+    animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) }
+  50% { transform: translateY(-10px) }
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1 }
+  50% { opacity: 0.5 }
 }

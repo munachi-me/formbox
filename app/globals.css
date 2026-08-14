@@ -41,8 +41,8 @@
   --shadow-glow-lg: 0 0 100px rgba(124, 58, 237, 0.2);
   
   /* Fonts */
-  --font-family-sans: var(--font-poppins), 'Poppins', system-ui, -apple-system, sans-serif;
-  --font-family-mono: var(--font-jetbrains-mono), 'Jetbrains Mono', ui-monospace, monospace;
+  --font-family-sans: 'Poppins', system-ui, -apple-system, sans-serif;
+  --font-family-mono: 'Jetbrains Mono', ui-monospace, monospace;
 }
 
 @layer base {

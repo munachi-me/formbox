@@ -699,10 +699,11 @@ export default function LandingContent() {
 
             <Link
               href="/register"
-              className="mt-8 inline-flex h-12 items-center gap-2 rounded-xl bg-white px-6 text-sm font-medium text-ink transition hover:bg-gray-100"
+              className="group mx-auto mt-8 inline-flex items-center gap-2 rounded-xl bg-purple px-6 py-3.5 text-sm font-medium text-white shadow-lg shadow-purple/20 transition hover:bg-purple-light"
             >
               Get started for free
-              <ArrowRight className="h-4 w-4" />
+
+              <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
             </Link>
           </div>
         </div>

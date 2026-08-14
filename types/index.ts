@@ -14,7 +14,7 @@ export type Form = {
   user_id: string
   title: string
   description: string | null
-  slug: string
+  share_id: string
   status: FormStatus
   created_at: string
   updated_at: string

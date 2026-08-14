@@ -579,20 +579,19 @@ export default function PricingContent() {
       {/* =====================================================
           CTA
       ====================================================== */}
-      <section className="container-custom py-28 lg:py-36">
-        <div className="relative overflow-hidden rounded-3xl border border-purple/20 bg-gradient-to-br from-purple/[0.12] via-purple/[0.04] to-green/[0.05] px-6 py-16 text-center sm:px-12 lg:py-20">
-          <div className="pointer-events-none absolute left-1/2 top-0 h-48 w-48 -translate-x-1/2 rounded-full bg-purple/15 blur-[100px]" />
+      <section className="relative overflow-hidden border-t border-white/[0.06] py-24 sm:py-32">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute left-1/2 top-1/2 h-[450px] w-[650px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-purple/10 blur-[130px]"
+        />
 
-          <div className="relative pricing-reveal">
-            <div className="mx-auto mb-8 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-purple to-green shadow-lg shadow-purple/10">
-              <Sparkles className="h-5 w-5 text-white" />
-            </div>
-
-            <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+        <div className="container-custom relative">
+          <div className="pricing-reveal mx-auto max-w-3xl text-center">
+            <h2 className="text-3xl font-semibold tracking-[-0.03em] text-white sm:text-4xl lg:text-5xl">
               Start building for free.
             </h2>
 
-            <p className="mx-auto mt-4 max-w-lg text-sm leading-6 text-gray-500">
+            <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-gray-600 sm:text-base">
               No complicated setup. No credit card. Just create your first
               form and start collecting responses.
             </p>

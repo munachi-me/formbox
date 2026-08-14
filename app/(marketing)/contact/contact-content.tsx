@@ -17,17 +17,17 @@ const socials = [
   {
     label: "GitHub",
     href: "https://github.com/munachi-me/formbox.git",
-    icon: "https://img.icons8.com/?size=100&id=62856&format=png&color=ffffff",
+    icon: "/github.png",
   },
   {
     label: "X",
     href: "https://x.com/",
-    icon: "https://img.icons8.com/?size=100&id=YfCbGWCWcuar&format=png&color=ffffff",
+    icon: "/x.png",
   },
   {
     label: "LinkedIn",
-    href: "https://linkedin.com/",
-    icon: "https://img.icons8.com/?size=100&id=98960&format=png&color=ffffff",
+    href: "https://linkedin.com/",    
+    icon: "/linkedin.png",
   },
 ];
 
@@ -155,10 +155,10 @@ export default function ContactContent() {
                 </p>
 
                 <a
-                  href="mailto:hello@formbox.dev"
+                  href="mailto:munachinedu4jesus123@gmail.com"
                   className="mt-2 inline-flex items-center gap-2 text-sm text-gray-400 transition hover:text-purple-light"
                 >
-                  hello@formbox.dev
+                  Munachi
                   <ArrowRight className="h-3.5 w-3.5" />
                 </a>
               </div>
@@ -188,13 +188,13 @@ export default function ContactContent() {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={social.label}
-                      className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.07] bg-white/[0.02] text-gray-600 transition hover:border-purple/30 hover:bg-purple/10 hover:text-purple-light"
+                      className="flex h-content w-content overflow-hidden items-center justify-center rounded-full border border-white/[0.07] bg-white/[0.02] text-gray-600 transition hover:border-purple/30 hover:bg-purple/10 hover:text-purple-light"
                     >
                       <Image
                         src={social.icon}
                         alt={social.label}
-                        width={4}
-                        height={4}
+                        width={25}
+                        height={25}
                       />
                     </SocialLink>
                   ))}                  
@@ -407,7 +407,7 @@ function SocialLink({
       target="_blank"
       rel="noopener noreferrer"
       aria-label={label}
-      className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.07] bg-white/[0.02] text-gray-600 transition hover:border-purple/30 hover:bg-purple/10 hover:text-purple-light"
+      className="flex h-content w-content overflow-hidden items-center justify-center rounded-full border border-white/[0.07] bg-white/[0.02] text-gray-600 transition hover:border-purple/30 hover:bg-purple/10 hover:text-purple-light"
     >
       {children}
     </a>

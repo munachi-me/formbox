@@ -166,7 +166,7 @@ formbox/
 │   │           └── page.tsx
 │   │
 │   ├── f/
-│   │   └── [slug]/
+│   │   └── [shareId]/
 │   │       └── page.tsx
 │   │
 │   ├── settings/

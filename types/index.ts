@@ -2,7 +2,6 @@ export type Profile = {
   id: string
   fullname: string
   email: string
-  password: string | null
   created_at: string
   updated_at: string
 }

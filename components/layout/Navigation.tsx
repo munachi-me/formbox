@@ -33,7 +33,7 @@ const navLinks = [
 ];
 
 
-export default function Navigation() {
+export function Navigation() {
   const pathname = usePathname();
 
   const navRef = useRef<HTMLElement>(null);

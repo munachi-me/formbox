@@ -1,28 +1,51 @@
-import { cn } from '@/lib/utils'
+import type { ReactNode } from "react";
 
-export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
-  variant?: 'draft' | 'published' | 'closed' | 'success' | 'warning'
+type BadgeVariant =
+  | "success"
+  | "warning"
+  | "danger"
+  | "neutral"
+  | "purple";
+
+interface BadgeProps {
+  children: ReactNode;
+  variant?: BadgeVariant;
 }
 
-const Badge = ({ className, variant = 'draft', ...props }: BadgeProps) => {
-  const variants = {
-    draft: 'bg-[#2A2A30] text-gray-400',
-    published: 'bg-[#DCFCE7] text-[#16A34A]',
-    closed: 'bg-red-500/10 text-red-500',
-    success: 'bg-green/10 text-green',
-    warning: 'bg-yellow-500/10 text-yellow-500',
-  }
+const variants: Record<BadgeVariant, string> = {
+  success:
+    "bg-green/10 text-green-light border-green/10",
 
+  warning:
+    "bg-yellow-400/10 text-yellow-400 border-yellow-400/10",
+
+  danger:
+    "bg-red-400/10 text-red-400 border-red-400/10",
+
+  neutral:
+    "bg-white/[0.05] text-gray-400 border-white/[0.06]",
+
+  purple:
+    "bg-purple/10 text-purple-lighter border-purple/10",
+};
+
+export function Badge({
+  children,
+  variant = "neutral",
+}: BadgeProps) {
   return (
     <span
-      className={cn(
-        'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-        variants[variant],
-        className
-      )}
-      {...props}
-    />
-  )
+      className={`
+        inline-flex items-center
+        rounded-full
+        border
+        px-2 py-0.5
+        text-[10px]
+        font-medium
+        ${variants[variant]}
+      `}
+    >
+      {children}
+    </span>
+  );
 }
-
-export { Badge }

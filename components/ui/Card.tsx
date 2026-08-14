@@ -1,30 +1,86 @@
-import { forwardRef } from 'react'
-import { cn } from '@/lib/utils'
+import type { HTMLAttributes, ReactNode } from "react";
 
-export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: 'dark' | 'light'
-  hover?: boolean
+interface CardProps
+  extends HTMLAttributes<HTMLDivElement> {
+  children: ReactNode;
 }
 
-const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ className, variant = 'dark', hover = false, ...props }, ref) => {
-    return (
-      <div
-        ref={ref}
-        className={cn(
-          'rounded-xl border transition-all duration-300',
-          variant === 'dark' 
-            ? 'bg-[#1A1A20] border-[#2A2A30]' 
-            : 'bg-white border-gray-200',
-          hover && 'hover:border-purple hover:shadow-glow hover:-translate-y-1',
-          className
-        )}
-        {...props}
-      />
-    )
-  }
-)
+export function Card({
+  children,
+  className = "",
+  ...props
+}: CardProps) {
+  return (
+    <div
+      className={`
+        rounded-xl
+        border border-white/[0.07]
+        bg-white/[0.02]
+        ${className}
+      `}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+}
 
-Card.displayName = 'Card'
+export function CardHeader({
+  children,
+  className = "",
+  ...props
+}: HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      className={`px-5 pt-5 ${className}`}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+}
 
-export { Card }
+export function CardTitle({
+  children,
+  className = "",
+  ...props
+}: HTMLAttributes<HTMLHeadingElement>) {
+  return (
+    <h2
+      className={`text-sm font-semibold text-white ${className}`}
+      {...props}
+    >
+      {children}
+    </h2>
+  );
+}
+
+export function CardDescription({
+  children,
+  className = "",
+  ...props
+}: HTMLAttributes<HTMLParagraphElement>) {
+  return (
+    <p
+      className={`mt-1 text-xs text-gray-600 ${className}`}
+      {...props}
+    >
+      {children}
+    </p>
+  );
+}
+
+export function CardContent({
+  children,
+  className = "",
+  ...props
+}: HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      className={`p-5 ${className}`}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+}

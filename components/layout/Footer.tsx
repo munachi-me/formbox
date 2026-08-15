@@ -61,7 +61,7 @@ const socials = [
   },
 ];
 
-export default function Footer() {
+export function Footer() {
   return (
     <footer className="border-t border-white/[0.06] bg-[#09090C]">
       <div className="container-custom">
@@ -177,6 +177,58 @@ export default function Footer() {
           <div className="flex items-center gap-2 text-xs text-gray-700">
             <span className="h-1.5 w-1.5 rounded-full bg-green" />
             <span>Built with simplicity in mind.</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+
+
+
+const links = [
+  {
+    label: "Privacy",
+    href: "/privacy",
+  },
+  {
+    label: "Terms",
+    href: "/terms",
+  },
+  {
+    label: "Contact",
+    href: "/contact",
+  },
+];
+
+export function UserFooter() {
+  return (
+    <footer className="border-t border-white/[0.06]">
+      <div className="container-custom">
+        <div className="flex min-h-16 flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+          {/* Copyright */}
+          <p className="text-xs text-gray-600">
+            © {new Date().getFullYear()} FormBox
+          </p>
+
+          {/* Links */}
+          <nav className="flex items-center gap-5">
+            {links.map((link) => (
+              <Link
+                key={link.label}
+                href={link.href}
+                className="text-xs text-gray-600 transition-colors hover:text-gray-300"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+
+          {/* Status */}
+          <div className="flex items-center gap-2 text-xs text-gray-600">
+            <span className="h-1.5 w-1.5 rounded-full bg-green" />
+            <span>All systems operational</span>
           </div>
         </div>
       </div>

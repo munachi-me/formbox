@@ -46,6 +46,7 @@ export function Button({
   ...props
 }: ButtonProps) {
   const classes = `
+    group
     inline-flex items-center justify-center
     gap-2 rounded-lg
     font-medium

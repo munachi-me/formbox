@@ -2,7 +2,9 @@
 
 import Logo from '@/components/ui/logo'
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/components/ui/toast";
+import { usePathname, useRouter } from "next/navigation";
 import {
   BarChart3,
   ChevronDown,
@@ -45,10 +47,35 @@ const secondaryNavigation = [
   },
 ];
 
-export function UsersNavigation() {
+export function UserNavigation() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const {
+    user,
+    signOut,
+  } = useAuth();
+
+  const { toast } = useToast();
+
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  const fullname =
+    user?.user_metadata?.fullname ||
+    user?.email?.split("@")[0] ||
+    "User";
+
+  const email = user?.email || "";
+
+  const initials = fullname
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((name) => name[0])
+    .join("")
+    .toUpperCase();
 
   /*
    * Close mobile navigation whenever the route changes.
@@ -80,6 +107,28 @@ export function UsersNavigation() {
     }
 
     return pathname === href || pathname.startsWith(`${href}/`);
+  };
+
+  const handleSignOut = async () => {
+    setLoggingOut(true);
+
+    const { error } = await signOut();
+
+    if (error) {
+      toast.error({
+        title: "Sign out failed",
+        message:
+          "Something went wrong. Please try again.",
+      });
+
+      setLoggingOut(false);
+      return;
+    }
+
+    setProfileOpen(false);
+    setMobileOpen(false);
+
+    router.replace("/login");
   };
 
   return (
@@ -209,16 +258,16 @@ export function UsersNavigation() {
             className="flex w-full items-center gap-3 rounded-lg p-2 text-left transition hover:bg-white/[0.04]"
           >
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple to-green text-xs font-semibold text-white">
-              FC
+              {initials}
             </div>
 
             <div className="min-w-0 flex-1">
               <p className="truncate text-xs font-medium text-gray-200">
-                Favour Chinedu
+                {fullname}
               </p>
 
               <p className="truncate text-[10px] text-gray-700">
-                favour@example.com
+                {email}
               </p>
             </div>
 
@@ -242,10 +291,13 @@ export function UsersNavigation() {
 
               <button
                 type="button"
-                className="flex w-full items-center gap-3 border-t border-white/[0.05] px-3 py-2.5 text-xs text-gray-400 transition hover:bg-red-400/[0.05] hover:text-red-400"
+                onClick={handleSignOut}
+                disabled={loggingOut}
+                className="flex w-full items-center gap-3 border-t border-white/[0.05] px-3 py-2.5 text-xs text-gray-400 transition hover:bg-red-400/[0.05] hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <LogOut className="h-3.5 w-3.5" />
-                Sign out
+
+                {loggingOut ? "Signing out..." : "Sign out"}
               </button>
             </div>
           )}
@@ -418,21 +470,36 @@ export function UsersNavigation() {
 
         {/* Mobile profile */}
         <div className="border-t border-white/[0.06] p-4">
+
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-purple to-green text-xs font-semibold text-white">
-              FC
+              {initials}
             </div>
 
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="truncate text-xs font-medium text-gray-200">
-                Favour Chinedu
+                {fullname}
               </p>
 
               <p className="truncate text-[10px] text-gray-700">
-                favour@example.com
+                {email}
               </p>
             </div>
           </div>
+
+          <button
+            type="button"
+            onClick={handleSignOut}
+            disabled={loggingOut}
+            className="mt-4 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-xs text-gray-500 transition hover:bg-red-400/[0.05] hover:text-red-400 disabled:opacity-50"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+
+            {loggingOut
+              ? "Signing out..."
+              : "Sign out"}
+          </button>
+
         </div>
       </aside>
     </>

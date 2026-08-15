@@ -1,8 +1,13 @@
 import type { Metadata } from "next";
-import { Poppins, JetBrains_Mono } from "next/font/google";
-import "./globals.css";
-import { ToastProvider } from "@/components/ui/toast";
+import {
+  Poppins,
+  JetBrains_Mono,
+} from "next/font/google";
 
+import "./globals.css";
+
+import { ToastProvider } from "@/components/ui/toast";
+import { AuthProvider } from "@/hooks/useAuth";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -23,8 +28,10 @@ export const metadata: Metadata = {
     default: "FormBox — Build forms. Collect responses.",
     template: "%s — FormBox",
   },
+
   description:
     "Create beautiful forms, share them anywhere, and collect responses with FormBox.",
+
   icons: {
     icon: "/formbox.png",
   },
@@ -38,11 +45,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${poppins.variable} ${jetbrainsMono.variable} antialiased font-family-sans`}
+        className={`${poppins.variable} ${jetbrainsMono.variable} antialiased font-sans`}
       >
-        <ToastProvider>
-          {children}
-        </ToastProvider>
+        <AuthProvider>
+          <ToastProvider>
+            {children}
+          </ToastProvider>
+        </AuthProvider>
       </body>
     </html>
   );

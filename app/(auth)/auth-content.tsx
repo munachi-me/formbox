@@ -4,7 +4,7 @@ import Logo from "@/components/ui/logo";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/providers/auth-provider";
 
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";

@@ -17,17 +17,17 @@ import type {
 
 import { supabase } from "@/lib/supabase/client";
 
-type AuthResult = {
+interface AuthResult {
   user: User | null;
   session: Session | null;
   error: AuthError | null;
 };
 
-type SignUpResult = AuthResult & {
+interface SignUpResult extends AuthResult {
   needsConfirmation: boolean;
 };
 
-type AuthContextType = {
+interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;

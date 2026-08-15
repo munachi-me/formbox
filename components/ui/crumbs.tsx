@@ -1,8 +1,8 @@
 import Link from 'next/link'
 
-export interface crumb {
-	name: string,
-	href: string
+export type crumb = {
+	name: string;
+	href: string;
 }
 
 export function Crumbs({crumbs}: crumb[]){

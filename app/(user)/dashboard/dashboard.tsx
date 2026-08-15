@@ -8,11 +8,11 @@ import { RecentForms } from "@/components/dashboard/recent-forms";
 import { TemplateSection } from "@/components/dashboard/template-section";
 import { RecentActivity } from "@/components/dashboard/recent-activity";
 import { GettingStarted } from "@/components/dashboard/getting-started";
-import { crumb, Crumbs } from "@/components/ui/crumbs";
+import { type crumb, Crumbs } from "@/components/ui/crumbs";
 
 
 const crumbs: crumb[] = [
-  {name: 'Dashboard', href="/dashboard"},
+  {name: 'Dashboard', href: "/dashboard"},
 ]
 
 export default function DashboardPage() {

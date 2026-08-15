@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/providers/auth-provider";
 import { UserNavigation } from "@/components/layout/user-navigation";
 import { UserFooter } from "@/components/layout/footer";
 

@@ -2,7 +2,7 @@
 
 import Logo from '@/components/ui/logo'
 import Link from "next/link";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/providers/auth-provider";
 import { useToast } from "@/components/ui/toast";
 import { usePathname, useRouter } from "next/navigation";
 import {

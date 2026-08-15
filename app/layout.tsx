@@ -7,7 +7,7 @@ import {
 import "./globals.css";
 
 import { ToastProvider } from "@/components/ui/toast";
-import { AuthProvider } from "@/hooks/useAuth";
+import { AuthProvider } from "@/providers/auth-provider";
 
 const poppins = Poppins({
   variable: "--font-poppins",

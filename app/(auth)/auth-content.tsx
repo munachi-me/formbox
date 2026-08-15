@@ -267,8 +267,8 @@ export default function AuthContent({
       toast.success({
         title: "Account created",
         message:
-          "Check your email to confirm your account.",
-      });
+          "Check your email to confirm your account. - from Supabase.",
+      })
 
       setSubmitting(false);
 
@@ -485,7 +485,7 @@ export default function AuthContent({
               variant="secondary"
               size="lg"
               className="h-12 w-full"
-              disabled={submitting}
+              disabled={true}
             >
               <GoogleIcon />
               Continue with Google

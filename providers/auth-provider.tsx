@@ -159,11 +159,11 @@ export function AuthProvider({
         await supabase.auth.signUp({
           email,
           password,
-
           options: {
             data: {
               fullname,
             },
+            redirectTo: `${window.location.origin}/dashboard`,
           },
         });
 

@@ -61,7 +61,7 @@
   }
 
   /* Custom scrollbar */
-  ::-webkit-scrollbar {
+  /*::-webkit-scrollbar {
     width: 8px;
     height: 8px;
   }
@@ -82,7 +82,7 @@
   
   ::-webkit-scrollbar-thumb:active {
     cursor: grabbing;
-  }
+  }*/
 
   /* Selection */
   ::selection {
@@ -94,6 +94,11 @@
 @layer components {
   .container-custom {
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .scrollbar {
+    scrollbar-color: #2A2A30 transparent;
+    scrollbar-width: 8px;
   }
 
   .gradient-text {

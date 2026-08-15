@@ -160,7 +160,7 @@ export function UserNavigation() {
         </div>
 
         {/* Main navigation */}
-        <nav className="flex-1 overflow-y-auto px-3 py-6">
+        <nav className="flex-1 overflow-y-auto px-3 py-6 scrollbar">
           <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-gray-700">
             Workspace
           </p>

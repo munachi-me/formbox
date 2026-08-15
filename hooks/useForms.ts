@@ -1,16 +1,18 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-
-import { supabase } from "@/lib/supabase/client";
 import type { Form, FormStatus } from "@/types";
+import { supabase } from "@/lib/supabase/client";
+
+type CreateFormData = {
+  title: string;
+  description?: string | null;
+};
 
 export function useForms() {
   const [forms, setForms] = useState<Form[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(
-    null,
-  );
+  const [error, setError] = useState<string | null>(null);
 
   const fetchForms = useCallback(async () => {
     setLoading(true);
@@ -35,6 +37,7 @@ export function useForms() {
       });
 
     if (error) {
+      console.error("Failed to fetch forms:", error);
       setError(error.message);
       setForms([]);
     } else {
@@ -49,34 +52,28 @@ export function useForms() {
   }, [fetchForms]);
 
   const createForm = useCallback(
-    async (form: {
-      title: string;
-      description?: string | null;
-      status?: FormStatus;
-    }) => {
+    async ({
+      title,
+      description = null,
+    }: CreateFormData) => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
 
       if (!user) {
         return {
-          data: null,
-          error: new Error("You must be logged in"),
+          form: null,
+          error: new Error("You must be signed in."),
         };
       }
-
-      const shareId = crypto.randomUUID()
-        .replaceAll("-", "")
-        .slice(0, 12);
 
       const { data, error } = await supabase
         .from("forms")
         .insert({
           user_id: user.id,
-          title: form.title,
-          description: form.description ?? null,
-          status: form.status ?? "draft",
-          share_id: shareId,
+          title,
+          description,
+          status: "draft" as FormStatus,
         })
         .select()
         .single();
@@ -86,37 +83,34 @@ export function useForms() {
       }
 
       return {
-        data,
+        form: data ?? null,
         error,
       };
     },
     [],
   );
 
-  const deleteForm = useCallback(
-    async (id: string) => {
-      const { error } = await supabase
-        .from("forms")
-        .delete()
-        .eq("id", id);
+  const deleteForm = useCallback(async (id: string) => {
+    const { error } = await supabase
+      .from("forms")
+      .delete()
+      .eq("id", id);
 
-      if (!error) {
-        setForms((current) =>
-          current.filter((form) => form.id !== id),
-        );
-      }
+    if (!error) {
+      setForms((current) =>
+        current.filter((form) => form.id !== id),
+      );
+    }
 
-      return { error };
-    },
-    [],
-  );
+    return { error };
+  }, []);
 
   return {
     forms,
     loading,
     error,
+    refetch: fetchForms,
     createForm,
     deleteForm,
-    refreshForms: fetchForms,
   };
 }

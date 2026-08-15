@@ -1,6 +1,7 @@
 "use client";
 
 import { useProfile } from "@/hooks/useProfile";
+import { useDashboard } from "@/hooks/useDashboard";
 
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { QuickActions } from "@/components/dashboard/quick-actions";
@@ -8,18 +9,38 @@ import { RecentForms } from "@/components/dashboard/recent-forms";
 import { TemplateSection } from "@/components/dashboard/template-section";
 import { RecentActivity } from "@/components/dashboard/recent-activity";
 import { GettingStarted } from "@/components/dashboard/getting-started";
-import { type crumb, Crumbs } from "@/components/ui/crumbs";
-
+import {
+  type crumb,
+  Crumbs,
+} from "@/components/ui/crumbs";
 
 const crumbs: crumb[] = [
-  {name: 'Dashboard', href: "/dashboard"},
-]
+  {
+    name: "Dashboard",
+    href: "/dashboard",
+  },
+];
 
 export default function DashboardPage() {
-  // const { user, loading } = useAuth();
-  const { profile, loading } = useProfile();
+  const {
+    profile,
+    loading: profileLoading,
+  } = useProfile();
 
-  const name = profile?.fullname ?? "there";
+  const {
+    forms,
+    templates,
+    activities,
+    gettingStarted,
+    loading: dashboardLoading,
+    error,
+  } = useDashboard();
+
+  const loading =
+    profileLoading || dashboardLoading;
+
+  const name =
+    profile?.fullname ?? "there";
 
   if (loading) {
     return (
@@ -48,28 +69,18 @@ export default function DashboardPage() {
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
         <Crumbs crumbs={crumbs} />
 
-        {/* Header */}
         <DashboardHeader name={name} />
 
         <div className="mt-10 space-y-10">
-
-          {/* Quick actions */}
           <QuickActions />
 
-          {/* Recent forms */}
-          <RecentForms />
+          <RecentForms forms={forms} />
+          <TemplateSection templates={templates} />          
 
-          {/* Templates */}
-          <TemplateSection />
-
-          {/* Activity */}
           <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-            <RecentActivity />
-
-            {/* Optional workspace card */}
-            <GettingStarted />
+            <RecentActivity activities={activities} />
+            <GettingStarted data={gettingStarted} />
           </div>
-
         </div>
       </div>
     </main>

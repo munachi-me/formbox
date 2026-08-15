@@ -9,62 +9,29 @@ import {
   Contact,
   MessageSquare,
   ShoppingBag,
+  FileText,
 } from "lucide-react";
 
-interface Template {
-  id: string;
-  name: string;
-  description: string;
-  icon: React.ElementType;
-  color: string;
+import type { Template } from "@/types";
+
+interface TemplateSectionProps {
+  templates: Template[];
 }
 
-const templates: Template[] = [
-  {
-    id: "contact",
-    name: "Contact Form",
-    description: "Let people get in touch with you.",
-    icon: Contact,
-    color: "purple",
-  },
-  {
-    id: "feedback",
-    name: "Feedback Form",
-    description: "Collect valuable customer feedback.",
-    icon: MessageSquare,
-    color: "green",
-  },
-  {
-    id: "event",
-    name: "Event Registration",
-    description: "Register attendees for your event.",
-    icon: CalendarDays,
-    color: "purple",
-  },
-  {
-    id: "application",
-    name: "Job Application",
-    description: "Collect applications from candidates.",
-    icon: BriefcaseBusiness,
-    color: "green",
-  },
-  {
-    id: "survey",
-    name: "Survey",
-    description: "Create a simple online survey.",
-    icon: ClipboardList,
-    color: "purple",
-  },
-  {
-    id: "order",
-    name: "Order Form",
-    description: "Collect product or service orders.",
-    icon: ShoppingBag,
-    color: "green",
-  },
-];
+const templateIcons = {
+  contact: Contact,
+  feedback: MessageSquare,
+  event: CalendarDays,
+  application: BriefcaseBusiness,
+  survey: ClipboardList,
+  order: ShoppingBag,
+  other: FileText,
+};
 
-export function TemplateSection() {
+export function TemplateSection({
+  templates,
+}: TemplateSectionProps) {
+
   return (
     <section>
       <div className="mb-4 flex items-end justify-between">
@@ -87,45 +54,50 @@ export function TemplateSection() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-        {templates.map((template) => {
-          const Icon = template.icon;
+      {templates.length === 0 ? (
+        <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-8 text-center">
+          <p className="text-sm text-gray-500">
+            No templates available yet.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+          {templates.slice(0, 6).map(
+            (template) => {
+              const Icon =
+                templateIcons[
+                  template.category
+                ] ?? FileText;
 
-          return (
-            <Link
-              key={template.id}
-              href={`/forms/new?template=${template.id}`}
-              className="group rounded-xl border border-white/[0.07] bg-white/[0.02] p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-white/[0.12] hover:bg-white/[0.035]"
-            >
-              <div
-                className={`
-                  flex h-9 w-9 items-center justify-center rounded-lg
-                  ${
-                    template.color === "purple"
-                      ? "bg-purple/10 text-purple-light"
-                      : "bg-green/10 text-green-light"
-                  }
-                `}
-              >
-                <Icon className="h-4 w-4" />
-              </div>
+              return (
+                <Link
+                  key={template.id}
+                  href={`/forms/new?template=${template.id}`}
+                  className="group rounded-xl border border-white/[0.07] bg-white/[0.02] p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-white/[0.12] hover:bg-white/[0.035]"
+                >
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple/10 text-purple-light">
+                    <Icon className="h-4 w-4" />
+                  </div>
 
-              <h3 className="mt-4 text-xs font-medium text-gray-200 transition group-hover:text-white">
-                {template.name}
-              </h3>
+                  <h3 className="mt-4 text-xs font-medium text-gray-200 transition group-hover:text-white">
+                    {template.name}
+                  </h3>
 
-              <p className="mt-1 line-clamp-2 text-[11px] leading-5 text-gray-600">
-                {template.description}
-              </p>
+                  <p className="mt-1 line-clamp-2 text-[11px] leading-5 text-gray-600">
+                    {template.description}
+                  </p>
 
-              <span className="mt-3 inline-flex items-center gap-1 text-[10px] text-gray-700 transition group-hover:text-purple-light">
-                Use template
-                <ArrowRight className="h-3 w-3 transition group-hover:translate-x-0.5" />
-              </span>
-            </Link>
-          );
-        })}
-      </div>
+                  <span className="mt-3 inline-flex items-center gap-1 text-[10px] text-gray-700 transition group-hover:text-purple-light">
+                    Use template
+
+                    <ArrowRight className="h-3 w-3 transition group-hover:translate-x-0.5" />
+                  </span>
+                </Link>
+              );
+            },
+          )}
+        </div>
+      )}
     </section>
   );
 }

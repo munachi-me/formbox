@@ -7,6 +7,7 @@ interface DashboardHeaderProps {
   name?: string;
 }
 
+
 export function DashboardHeader({
   name = "there",
 }: DashboardHeaderProps) {
@@ -14,7 +15,7 @@ export function DashboardHeader({
     <section className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
-          Hey, {name} 👋
+          Hey, {name.toUpperCase()}.
         </h1>
 
         <p className="mt-2 max-w-xl text-sm leading-6 text-gray-500">

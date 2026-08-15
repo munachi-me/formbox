@@ -224,12 +224,6 @@ export function UserFooter() {
               </Link>
             ))}
           </nav>
-
-          {/* Status */}
-          <div className="flex items-center gap-2 text-xs text-gray-600">
-            <span className="h-1.5 w-1.5 rounded-full bg-green" />
-            <span>All systems operational</span>
-          </div>
         </div>
       </div>
     </footer>

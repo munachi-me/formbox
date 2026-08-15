@@ -7,26 +7,34 @@ import {
   Circle,
 } from "lucide-react";
 
-const steps = [
-  {
-    label: "Create your first form",
-    completed: true,
-  },
-  {
-    label: "Customize your form",
-    completed: true,
-  },
-  {
-    label: "Publish your form",
-    completed: false,
-  },
-  {
-    label: "Collect your first response",
-    completed: false,
-  },
-];
+import type { GettingStartedData } from "@/hooks/useDashboard";
 
-export function GettingStarted() {
+interface GettingStartedProps {
+  data: GettingStartedData;
+}
+
+export function GettingStarted({
+  data,
+}: GettingStartedProps) {
+  const steps = [
+    {
+      label: "Create your first form",
+      completed: data.hasForm,
+    },
+    {
+      label: "Customize your form",
+      completed: data.hasForm,
+    },
+    {
+      label: "Publish your form",
+      completed: data.hasPublishedForm,
+    },
+    {
+      label: "Collect your first response",
+      completed: data.hasResponse,
+    },
+  ];
+
   const completed = steps.filter(
     (step) => step.completed,
   ).length;
@@ -44,7 +52,9 @@ export function GettingStarted() {
           </h2>
 
           <p className="mt-1 text-xs text-gray-600">
-            You're making great progress.
+            {progress === 100
+              ? "You're all set."
+              : "You're making great progress."}
           </p>
         </div>
 
@@ -53,7 +63,6 @@ export function GettingStarted() {
         </span>
       </div>
 
-      {/* Progress */}
       <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
         <div
           className="h-full rounded-full bg-gradient-to-r from-purple to-green transition-all"
@@ -63,7 +72,6 @@ export function GettingStarted() {
         />
       </div>
 
-      {/* Steps */}
       <div className="mt-5 space-y-4">
         {steps.map((step) => (
           <div
@@ -95,10 +103,19 @@ export function GettingStarted() {
       </div>
 
       <Link
-        href="/forms/new"
+        href={
+          !data.hasForm
+            ? "/forms/new"
+            : !data.hasPublishedForm
+              ? "/forms"
+              : "/forms"
+        }
         className="mt-6 flex items-center justify-between rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-2.5 text-xs text-gray-500 transition hover:bg-white/[0.04] hover:text-white"
       >
-        Continue building
+        {progress === 100
+          ? "View your forms"
+          : "Continue building"}
+
         <ArrowRight className="h-3.5 w-3.5" />
       </Link>
     </section>

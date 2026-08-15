@@ -92,7 +92,7 @@ export function RecentForms({
 
           <Link
             href="/forms/new"
-            className="mt-3 inline-flex text-xs text-purple-light hover:text-purple-lighter"
+            className="mt-4 flex h-10 w-[fit-content] mx-auto items-center justify-center gap-2 rounded-lg bg-purple px-4 text-sm font-medium text-white shadow-lg shadow-purple/10 transition-all duration-200 hover:bg-purple-light hover:shadow-purple/20"
           >
             Create your first form
           </Link>

@@ -6,7 +6,7 @@ import { useAuth } from "@/providers/auth-provider";
 import { useToast } from "@/components/ui/toast";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  BarChart3,
+  LayoutDashboard,
   ChevronDown,
   FilePlus2,
   FileText,
@@ -25,7 +25,7 @@ const mainNavigation = [
   {
     label: "Dashboard",
     href: "/dashboard",
-    icon: BarChart3,
+    icon: LayoutDashboard,
   },
   {
     label: "Forms",
@@ -137,7 +137,8 @@ export function UserNavigation() {
           DESKTOP SIDEBAR
       ====================================================== */}
 
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-white/[0.06] bg-background lg:flex lg:flex-col">
+      <aside className="fixed inset-y-0 left-0 top-0 z-40 hidden w-64 border-r border-white/[0.06] bg-background 
+        lg:sticky lg:flex lg:flex-col lg:h-[100dvh]">
         {/* Logo */}
         <div className="flex h-20 items-center border-b border-white/[0.06] px-6">
           <Link
@@ -179,7 +180,7 @@ export function UserNavigation() {
                     text-sm transition-all duration-200
                     ${
                       active
-                        ? "bg-purple/10 text-white"
+                        ? "bg-purple/10 text-purple-light font-medium"
                         : "text-gray-500 hover:bg-white/[0.04] hover:text-gray-200"
                     }
                   `}

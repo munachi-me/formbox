@@ -1,11 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import { supabase } from "@/lib/supabase/client";
 import type {
   Form,
   Template,
 } from "@/types";
+import { useForms } from './useForms'
+import { useTemplates } from './useTemplates'
 
 export type DashboardForm = Form & {
   response_count: number;
@@ -25,15 +27,25 @@ export type GettingStartedData = {
   hasResponse: boolean;
 };
 
+function getRandomTemplates(num: number, array: Template[]): Template[] {  
+
+  const result: Template[] = [];
+  const available = [...array];
+  
+  for (let i = 0; i < num; i++) {
+    const randomIndex = Math.floor(Math.random() * available.length);
+    result.push(available[randomIndex]);
+    available.splice(randomIndex, 1); // Remove to prevent duplicates
+  }          
+  return result;
+}
+
+
 export function useDashboard() {
-  const [forms, setForms] = useState<DashboardForm[]>([]);
-
-  const [templates, setTemplates] =
-    useState<Template[]>([]);
-
-  const [activities, setActivities] = useState<
-    DashboardActivity[]
-  >([]);
+  const { forms, loading: fload } = useForms()
+  const { templates, loading: tload } = useTemplates()
+  const [formsWithCount, setFormsWithCount] = useState<DashboardForm[]>([]);
+  const [activities, setActivities] = useState<DashboardActivity[]>([]);
 
   const [gettingStarted, setGettingStarted] =
     useState<GettingStartedData>({
@@ -42,12 +54,34 @@ export function useDashboard() {
       hasResponse: false,
     });
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] =
-    useState<string | null>(null);
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null);
+
+  const [formsLoad, setFormsLoad] = useState(true);
+  const [tempsLoad, setTempsLoad] = useState(true);
+  const [actsLoad, setActsLoad] = useState(true);
+  const [gstartLoad, setGstartLoad] = useState(true);
+
+  /* =====================================================
+     SELECTED TEMPLATES
+  ====================================================== */
+
+  const selectedTemplates = useMemo(()=>{
+    setTempsLoad(true) 
+
+    const selected = getRandomTemplates(6, templates)
+    if(!selected) return
+
+    setTempsLoad(false)
+    return selected
+  
+  }, [templates])
+
 
   const fetchDashboard = useCallback(async () => {
-    setLoading(true);
+    setFormsLoad(true)
+    setActsLoad(true)
+    setGstartLoad(true)
     setError(null);
 
     try {
@@ -75,33 +109,14 @@ export function useDashboard() {
           hasResponse: false,
         });
 
+        setLoading(false)
         return;
-      }
-
-      /* =====================================================
-         FORMS
-      ====================================================== */
-
-      const {
-        data: formData,
-        error: formsError,
-      } = await supabase
-        .from("forms")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("updated_at", {
-          ascending: false,
-        });
-
-      if (formsError) {
-        throw formsError;
-      }
-
-      const userForms = formData ?? [];
+      } 
 
       /* =====================================================
          RESPONSE COUNTS
       ====================================================== */
+      const userForms = forms ?? [];
 
       const formIds = userForms.map(
         (form) => form.id,
@@ -136,7 +151,8 @@ export function useDashboard() {
             responseCounts[form.id] ?? 0,
         }));
 
-      setForms(dashboardForms);
+      setFormsWithCount(dashboardForms);
+      setFormsLoad(false)
 
       /* =====================================================
          GETTING STARTED
@@ -157,30 +173,7 @@ export function useDashboard() {
         hasPublishedForm,
         hasResponse,
       });
-
-      /* =====================================================
-         TEMPLATES
-      ====================================================== */
-
-      const {
-        data: templateData,
-        error: templatesError,
-      } = await supabase
-        .from("templates")
-        .select("*")
-        .eq("is_active", true)
-        .order("is_featured", {
-          ascending: false,
-        })
-        .order("created_at", {
-          ascending: false,
-        });
-
-      if (templatesError) {
-        throw templatesError;
-      }
-
-      setTemplates(templateData ?? []);
+      setGstartLoad(false)
 
       /* =====================================================
          ACTIVITY
@@ -236,6 +229,7 @@ export function useDashboard() {
       setActivities(
         generatedActivities.slice(0, 5),
       );
+      setActsLoad(false)
     } catch (err) {
       console.error(
         "Failed to fetch dashboard:",
@@ -249,6 +243,11 @@ export function useDashboard() {
       );
     } finally {
       setLoading(false);
+      setLoading(false)
+      setFormsLoad(false)
+      setActsLoad(false)
+      setGstartLoad(false)
+      setError(false);
     }
   }, []);
 
@@ -257,11 +256,15 @@ export function useDashboard() {
   }, [fetchDashboard]);
 
   return {
-    forms,
-    templates,
+    forms: formsWithCount,
+    templates: selectedTemplates,
     activities,
     gettingStarted,
     loading,
+    formsLoad,
+    tempsLoad,
+    actsLoad,
+    gstartLoad,
     error,
     refetch: fetchDashboard,
   };

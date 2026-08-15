@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     "Create beautiful forms, share them anywhere, and collect responses with FormBox.",
 
   icons: {
-    icon: "/formbox.png",
+    icon: "/formbox.jpg",
   },
 };
 

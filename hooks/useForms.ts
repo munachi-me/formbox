@@ -1,18 +1,27 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import type { Form, FormStatus } from "@/types";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
+import type { Form, FormStatus } from "@/types";
 
-type CreateFormData = {
-  title: string;
-  description?: string | null;
+export type FormSort =
+  | "updated"
+  | "created"
+  | "title"
+  | "responses";
+
+export type FormWithResponseCount = Form & {
+  response_count: number;
 };
 
 export function useForms() {
-  const [forms, setForms] = useState<Form[]>([]);
+  const [forms, setForms] = useState<FormWithResponseCount[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState<FormStatus | "all">("all");
+  const [sort, setSort] = useState<FormSort>("updated");
 
   const fetchForms = useCallback(async () => {
     setLoading(true);
@@ -28,7 +37,7 @@ export function useForms() {
       return;
     }
 
-    const { data, error } = await supabase
+    const { data, error: formsError } = await supabase
       .from("forms")
       .select("*")
       .eq("user_id", user.id)
@@ -36,14 +45,46 @@ export function useForms() {
         ascending: false,
       });
 
-    if (error) {
-      console.error("Failed to fetch forms:", error);
-      setError(error.message);
-      setForms([]);
-    } else {
-      setForms(data ?? []);
+    if (formsError) {
+      console.error(formsError);
+      setError(formsError.message);
+      setLoading(false);
+      return;
     }
 
+    const userForms = (data ?? []) as Form[];
+
+    const formIds = userForms.map((form) => form.id);
+
+    let responseCounts: Record<string, number> = {};
+
+    if (formIds.length > 0) {
+      const { data: responses, error: responsesError } =
+        await supabase
+          .from("responses")
+          .select("id, form_id")
+          .in("form_id", formIds);
+
+      if (responsesError) {
+        console.error(responsesError);
+      } else {
+        responseCounts = (responses ?? []).reduce<
+          Record<string, number>
+        >((counts, response) => {
+          counts[response.form_id] =
+            (counts[response.form_id] ?? 0) + 1;
+
+          return counts;
+        }, {});
+      }
+    }
+
+    const formsWithCounts = userForms.map((form) => ({
+      ...form,
+      response_count: responseCounts[form.id] ?? 0,
+    }));
+
+    setForms(formsWithCounts);
     setLoading(false);
   }, []);
 
@@ -51,66 +92,101 @@ export function useForms() {
     fetchForms();
   }, [fetchForms]);
 
-  const createForm = useCallback(
-    async ({
-      title,
-      description = null,
-    }: CreateFormData) => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+  const filteredForms = useMemo(() => {
+    let result = [...forms];
 
-      if (!user) {
+    /*
+     * Search
+     */
+    const query = search.trim().toLowerCase();
+
+    if (query) {
+      result = result.filter(
+        (form) =>
+          form.title.toLowerCase().includes(query) ||
+          form.description?.toLowerCase().includes(query),
+      );
+    }
+
+    /*
+     * Status
+     */
+    if (status !== "all") {
+      result = result.filter(
+        (form) => form.status === status,
+      );
+    }
+
+    /*
+     * Sort
+     */
+    result.sort((a, b) => {
+      switch (sort) {
+        case "title":
+          return a.title.localeCompare(b.title);
+
+        case "created":
+          return (
+            new Date(b.created_at).getTime() -
+            new Date(a.created_at).getTime()
+          );
+
+        case "responses":
+          return b.response_count - a.response_count;
+
+        case "updated":
+        default:
+          return (
+            new Date(b.updated_at).getTime() -
+            new Date(a.updated_at).getTime()
+          );
+      }
+    });
+
+    return result;
+  }, [forms, search, status, sort]);
+
+  const deleteForm = useCallback(
+    async (formId: string) => {
+      const { error } = await supabase
+        .from("forms")
+        .delete()
+        .eq("id", formId);
+
+      if (error) {
         return {
-          form: null,
-          error: new Error("You must be signed in."),
+          error,
         };
       }
 
-      const { data, error } = await supabase
-        .from("forms")
-        .insert({
-          user_id: user.id,
-          title,
-          description,
-          status: "draft" as FormStatus,
-        })
-        .select()
-        .single();
-
-      if (!error && data) {
-        setForms((current) => [data, ...current]);
-      }
+      setForms((current) =>
+        current.filter((form) => form.id !== formId),
+      );
 
       return {
-        form: data ?? null,
-        error,
+        error: null,
       };
     },
     [],
   );
 
-  const deleteForm = useCallback(async (id: string) => {
-    const { error } = await supabase
-      .from("forms")
-      .delete()
-      .eq("id", id);
-
-    if (!error) {
-      setForms((current) =>
-        current.filter((form) => form.id !== id),
-      );
-    }
-
-    return { error };
-  }, []);
-
   return {
-    forms,
+    forms: filteredForms,
+    allForms: forms,
+
+    search,
+    setSearch,
+
+    status,
+    setStatus,
+
+    sort,
+    setSort,
+
     loading,
     error,
-    refetch: fetchForms,
-    createForm,
+
     deleteForm,
+    refetch: fetchForms,
   };
 }

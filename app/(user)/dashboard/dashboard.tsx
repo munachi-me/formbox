@@ -3,12 +3,18 @@
 import { useProfile } from "@/hooks/useProfile";
 import { useDashboard } from "@/hooks/useDashboard";
 
-import { DashboardHeader } from "@/components/dashboard/dashboard-header";
-import { QuickActions } from "@/components/dashboard/quick-actions";
-import { RecentForms } from "@/components/dashboard/recent-forms";
-import { TemplateSection } from "@/components/dashboard/template-section";
-import { RecentActivity } from "@/components/dashboard/recent-activity";
-import { GettingStarted } from "@/components/dashboard/getting-started";
+import { DashboardHeader } from "@/components/users/headers";
+import { QuickActions } from "@/components/users/quick-actions";
+import { RecentForms } from "@/components/users/recent-forms";
+import { TemplateSection } from "@/components/users/template-section";
+import { TemplateGridSkeleton } from "@/components/skeletons/template-grid-skeleton";
+import { Skeleton } from "@/components/skeletons/skeleton";
+import { RecentActivity } from "@/components/users/recent-activity";
+import { GettingStarted } from "@/components/users/getting-started";
+import { Loading } from "@/components/skeletons/loading"
+import { FormsEmptyState } from "@/components/users/forms-empty-state";
+
+
 import {
   type crumb,
   Crumbs,
@@ -21,7 +27,7 @@ const crumbs: crumb[] = [
   },
 ];
 
-export default function DashboardPage() {
+export default function Dashboard() {
   const {
     profile,
     loading: profileLoading,
@@ -32,54 +38,82 @@ export default function DashboardPage() {
     templates,
     activities,
     gettingStarted,
-    loading: dashboardLoading,
+    formsLoad,
+    tempsLoad,
+    actsLoad,
+    gstartLoad,
     error,
   } = useDashboard();
 
-  const loading =
-    profileLoading || dashboardLoading;
+  const loading = profileLoading;
 
-  const name =
-    profile?.fullname ?? "there";
+  const firstName = profile?.fullname?.split(' ')[0] ?? "there";
 
-  if (loading) {
+  if (error) {
     return (
       <main className="min-h-screen">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <div className="animate-pulse space-y-8">
-            <div>
-              <div className="h-7 w-48 rounded bg-white/[0.05]" />
-              <div className="mt-3 h-4 w-80 rounded bg-white/[0.03]" />
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="h-32 rounded-xl bg-white/[0.03]" />
-              <div className="h-32 rounded-xl bg-white/[0.03]" />
-            </div>
-
-            <div className="h-64 rounded-xl bg-white/[0.03]" />
+          <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-6 text-red-500">
+            <h2 className="text-lg font-semibold">Something went wrong</h2>
+            <p className="mt-2 text-sm text-red-400/80">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-4 rounded-lg bg-red-500/20 px-4 py-2 text-sm font-medium text-red-400 hover:bg-red-500/30"
+            >
+              Try again
+            </button>
           </div>
         </div>
       </main>
     );
   }
 
+  if (loading) {
+    return (
+      <Loading />
+    );
+  }
+
   return (
     <main className="min-h-screen">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
+      <div className="mx-auto max-w-7xl p-4 lg:p-8">
         <Crumbs crumbs={crumbs} />
 
-        <DashboardHeader name={name} />
+        <DashboardHeader name={firstName} />
 
         <div className="mt-10 space-y-10">
           <QuickActions />
 
-          <RecentForms forms={forms} />
-          <TemplateSection templates={templates} />          
+          {formsLoad ? (
+            <FormsEmptyState
+              searching="Recent forms..."
+            />
+          ) : (
+            <RecentForms forms={forms} />
+          )}
+
+          {tempsLoad ? (
+            <TemplateGridSkeleton />
+          ) : (
+            <TemplateSection templates={templates} />
+          )}
 
           <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-            <RecentActivity activities={activities} />
-            <GettingStarted data={gettingStarted} />
+            {actsLoad ? (
+              <Skeleton />
+            ) : (              
+              <RecentActivity activities={activities} />
+            )}
+
+            {gstartLoad ? (
+              <Skeleton />
+            ) : (              
+              gettingStarted && (
+                <GettingStarted data={gettingStarted} />
+              )
+            )}
+            
+            
           </div>
         </div>
       </div>

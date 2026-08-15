@@ -2,6 +2,7 @@ export type Profile = {
   id: string;
   fullname: string;
   email: string;
+  avatar_url: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -77,11 +78,12 @@ export type TemplateCategory =
 
 export interface Template {
   id: string;
+  slug: string;
   name: string;
   description: string | null;
   category: TemplateCategory;
-  thumbnail_url: string | null;
-  is_featured: boolean;
+  icon: string | null;
+  accent: "purple" | "green";
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -95,22 +97,21 @@ export interface TemplateQuestion {
   description: string | null;
   required: boolean;
   position: number;
-  options: string[] | null;
-  created_at: string;
+  options: QuestionOption[] | null;
 }
 
 /* =========================================================
    UTILITY TYPES
 ========================================================= */
 
-export type FormWithQuestions = Form & {
+export interface FormWithQuestions extends Form {
   questions: Question[];
 };
 
-export type ResponseWithAnswers = Response & {
+export interface ResponseWithAnswers extends Response {
   answers: Answer[];
 };
 
-export type TemplateWithQuestions = Template & {
+export interface TemplateWithQuestions extends Template {
   questions: TemplateQuestion[];
-};
+}

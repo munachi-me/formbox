@@ -93,10 +93,10 @@ export default function UsersLayout({
    */
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen relative bg-background flex flex-col lg:flex-row">
       <UserNavigation />
 
-      <main className="pt-16 lg:pl-64 lg:pt-0">
+      <main className="w-full">
         {children}
         <UserFooter />
       </main>

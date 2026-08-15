@@ -4,7 +4,7 @@ export default function Logo() {
   return (
     <div className="flex items-center gap-2">
       <Image
-        src="/formbox.png"
+        src="/formbox.jpg"
         alt="formbox logo"
         width={23}
         height={23} 

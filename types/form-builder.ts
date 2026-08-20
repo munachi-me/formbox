@@ -1,7 +1,9 @@
 import type {
   QuestionOption,
   QuestionType,
+  RatingOptions,
 } from "@/types";
+
 
 export interface FormBuilderQuestion {
   id: string;
@@ -9,7 +11,7 @@ export interface FormBuilderQuestion {
   label: string;
   description: string;
   required: boolean;
-  options: QuestionOption[];
+  options: QuestionOption[] | RatingOptions;
 }
 
 export interface FormBuilderData {

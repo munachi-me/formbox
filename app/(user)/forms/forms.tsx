@@ -48,10 +48,9 @@ export default function Forms() {
     (form) => form.status === "draft",
   ).length;
 
-  const responseCount = allForms.reduce(
-    (total, form) => total + form.response_count,
-    0,
-  );
+  const closedCount = allForms.filter(
+    (form) => form.status === "closed",
+  ).length;
 
   if (loading) {
     return (
@@ -64,6 +63,13 @@ export default function Forms() {
             </div>
 
             <div className="h-10 rounded-lg bg-white/[0.03]" />
+            
+            <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+              <div className="h-24 rounded-xl bg-white/[0.03]" />
+              <div className="h-24 rounded-xl bg-white/[0.03]" />
+              <div className="h-24 rounded-xl bg-white/[0.03]" />
+              <div className="h-24 rounded-xl bg-white/[0.03]" />
+            </div>
 
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {[1, 2, 3, 4, 5, 6].map(
@@ -83,20 +89,18 @@ export default function Forms() {
 
   if (error) {
     return (
-      <main className="min-h-screen">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
-          <Crumbs crumbs={crumbs} />
+      <main className="min-h-screen flex items-center justify-center">
+        <div className="m-auto max-w-7xl p-4 lg:p-8">
+            <div className="mt-8 rounded-xl border border-red-400/10 bg-red-400/[0.03] p-6">
+              <h2 className="text-sm font-medium text-red-400">
+                Could not load your forms
+              </h2>
 
-          <div className="mt-8 rounded-xl border border-red-400/10 bg-red-400/[0.03] p-6">
-            <h2 className="text-sm font-medium text-red-400">
-              Could not load your forms
-            </h2>
-
-            <p className="mt-2 text-xs text-gray-600">
-              {error}
-            </p>
+              <p className="mt-2 text-xs text-gray-600">
+                {error}
+              </p>
+            </div>
           </div>
-        </div>
       </main>
     );
   }
@@ -107,19 +111,16 @@ export default function Forms() {
 
   return (
     <main className="min-h-screen">
+      <Crumbs crumbs={crumbs} />
       <div className="mx-auto max-w-7xl p-4 lg:p-8">
-        <Crumbs crumbs={crumbs} />
-
-        <div className="">
-          <FormsHeader count={allForms.length} />
-        </div>
-
+        <FormsHeader />
+                
         <div className="mt-8">
           <FormsStats
             total={allForms.length}
             published={publishedCount}
             drafts={draftCount}
-            responses={responseCount}
+            closed={closedCount}
           />
         </div>
 
@@ -151,6 +152,7 @@ export default function Forms() {
             </div>
           )}
         </div>
+
       </div>
     </main>
   );

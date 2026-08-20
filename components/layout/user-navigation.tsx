@@ -140,7 +140,7 @@ export function UserNavigation() {
       <aside className="fixed inset-y-0 left-0 top-0 z-40 hidden w-64 border-r border-white/[0.06] bg-background 
         lg:sticky lg:flex lg:flex-col lg:h-[100dvh]">
         {/* Logo */}
-        <div className="flex h-20 items-center border-b border-white/[0.06] px-6">
+        <div className="flex items-center border-b border-white/[0.06] px-6 py-5">
           <Link
             href="/dashboard"
             className="flex items-center gap-2.5"

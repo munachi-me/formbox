@@ -1,307 +1,217 @@
-// "use client";
-
-// import { useCallback, useEffect, useState } from "react";
-
-// import { supabase } from "@/lib/supabase/client";
-// import type {
-//   FormWithQuestions,
-//   Question,
-//   QuestionType,
-// } from "@/types";
-
-// export function useForm(id: string | undefined) {
-//   const [form, setForm] =
-//     useState<FormWithQuestions | null>(null);
-
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState<string | null>(
-//     null,
-//   );
-
-//   const fetchForm = useCallback(async () => {
-//     if (!id) {
-//       setForm(null);
-//       setLoading(false);
-//       return;
-//     }
-
-//     setLoading(true);
-//     setError(null);
-
-//     const { data, error } = await supabase
-//       .from("forms")
-//       .select(
-//         `
-//           *,
-//           questions (
-//             id,
-//             form_id,
-//             type,
-//             label,
-//             description,
-//             required,
-//             position,
-//             options,
-//             created_at
-//           )
-//         `,
-//       )
-//       .eq("id", id)
-//       .single();
-
-//     if (error) {
-//       setError(error.message);
-//       setForm(null);
-//     } else {
-//       const sortedQuestions = [
-//         ...(data.questions ?? []),
-//       ].sort(
-//         (a: Question, b: Question) =>
-//           a.position - b.position,
-//       );
-
-//       setForm({
-//         ...data,
-//         questions: sortedQuestions,
-//       });
-//     }
-
-//     setLoading(false);
-//   }, [id]);
-
-//   useEffect(() => {
-//     fetchForm();
-//   }, [fetchForm]);
-
-//   const updateForm = useCallback(
-//     async (
-//       updates: Partial<
-//         Pick<
-//           FormWithQuestions,
-//           "title" | "description" | "status"
-//         >
-//       >,
-//     ) => {
-//       if (!id) {
-//         return {
-//           data: null,
-//           error: new Error("Form ID is required"),
-//         };
-//       }
-
-//       const { data, error } = await supabase
-//         .from("forms")
-//         .update(updates)
-//         .eq("id", id)
-//         .select()
-//         .single();
-
-//       if (!error && data) {
-//         setForm((current) =>
-//           current
-//             ? {
-//                 ...current,
-//                 ...data,
-//               }
-//             : current,
-//         );
-//       }
-
-//       return {
-//         data,
-//         error,
-//       };
-//     },
-//     [id],
-//   );
-
-//   const addQuestion = useCallback(
-//     async (question: {
-//       type: QuestionType;
-//       label: string;
-//       description?: string | null;
-//       required?: boolean;
-//       options?: string[] | null;
-//     }) => {
-//       if (!id) {
-//         return {
-//           data: null,
-//           error: new Error("Form ID is required"),
-//         };
-//       }
-
-//       const position =
-//         (form?.questions.length ?? 0) + 1;
-
-//       const { data, error } = await supabase
-//         .from("questions")
-//         .insert({
-//           form_id: id,
-//           type: question.type,
-//           label: question.label,
-//           description:
-//             question.description ?? null,
-//           required: question.required ?? false,
-//           position,
-//           options: question.options ?? null,
-//         })
-//         .select()
-//         .single();
-
-//       if (!error && data) {
-//         setForm((current) =>
-//           current
-//             ? {
-//                 ...current,
-//                 questions: [
-//                   ...current.questions,
-//                   data,
-//                 ],
-//               }
-//             : current,
-//         );
-//       }
-
-//       return {
-//         data,
-//         error,
-//       };
-//     },
-//     [id, form?.questions.length],
-//   );
-
-//   const deleteQuestion = useCallback(
-//     async (questionId: string) => {
-//       const { error } = await supabase
-//         .from("questions")
-//         .delete()
-//         .eq("id", questionId);
-
-//       if (!error) {
-//         setForm((current) =>
-//           current
-//             ? {
-//                 ...current,
-//                 questions:
-//                   current.questions.filter(
-//                     (question) =>
-//                       question.id !== questionId,
-//                   ),
-//               }
-//             : current,
-//         );
-//       }
-
-//       return { error };
-//     },
-//     [],
-//   );
-
-//   return {
-//     form,
-//     loading,
-//     error,
-//     updateForm,
-//     addQuestion,
-//     deleteQuestion,
-//     refreshForm: fetchForm,
-//   };
-// }
-
-
-
-
-
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
-import type { Form, Question } from "@/types";
 
-export function useForm(formId: string) {
-  const [form, setForm] = useState<Form | null>(null);
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+import type {
+  FormWithQuestions,
+  Response,
+  FormStatus,
+} from "@/types";
+
+export type FormStats = {
+  responses: number;
+  questions: number;
+};
+
+export function useForm(id: string) {
+  const [form, setForm] =
+    useState<FormWithQuestions | null>(null);
+
+  const [responses, setResponses] =
+    useState<Response[]>([]);
+
+  const [stats, setStats] = useState<FormStats>({
+    responses: 0,
+    questions: 0,
+  });
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [error, setError] =
+    useState<string | null>(null);
 
   const fetchForm = useCallback(async () => {
-    if (!formId) return;
+    if (!id) return;
 
     setLoading(true);
     setError(null);
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    try {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
 
-    if (!user) {
-      setForm(null);
-      setQuestions([]);
-      setError("You must be signed in to edit this form.");
-      setLoading(false);
-      return;
-    }
+      if (userError) {
+        throw userError;
+      }
 
-    /*
-     * Fetch the form.
-     *
-     * The user_id check is important:
-     * it prevents a user from loading another user's form.
-     */
-    const { data: formData, error: formError } =
-      await supabase
+      if (!user) {
+        throw new Error(
+          "You must be signed in to view this form.",
+        );
+      }
+
+      /*
+       * Fetch form.
+       *
+       * user_id ensures a user cannot
+       * load another user's form through
+       * the client.
+       */
+      const {
+        data: formData,
+        error: formError,
+      } = await supabase
         .from("forms")
         .select("*")
-        .eq("id", formId)
+        .eq("id", id)
         .eq("user_id", user.id)
         .single();
 
-    if (formError) {
-      console.error(formError);
+      if (formError) {
+        throw formError;
+      }
 
-      setForm(null);
-      setQuestions([]);
-      setError(
-        formError.code === "PGRST116"
-          ? "Form not found."
-          : formError.message,
-      );
+      /*
+       * Fetch questions.
+       */
+      const {
+        data: questionData,
+        error: questionError,
+      } = await supabase
+        .from("questions")
+        .select("*")
+        .eq("form_id", id)
+        .order("position", {
+          ascending: true,
+        });
 
-      setLoading(false);
-      return;
-    }
+      if (questionError) {
+        throw questionError;
+      }
 
-    /*
-     * Fetch questions separately.
-     *
-     * This keeps the query simple and gives us
-     * properly typed Question[] data.
-     */
-    const {
-      data: questionData,
-      error: questionsError,
-    } = await supabase
-      .from("questions")
-      .select("*")
-      .eq("form_id", formId)
-      .order("position", {
-        ascending: true,
+      /*
+       * Fetch responses.
+       *
+       * We only need the response metadata
+       * on this page.
+       */
+      const {
+        data: responseData,
+        error: responseError,
+      } = await supabase
+        .from("responses")
+        .select("id, form_id, submitted_at")
+        .eq("form_id", id)
+        .order("submitted_at", {
+          ascending: false,
+        })
+        .limit(10);
+
+      if (responseError) {
+        throw responseError;
+      }
+
+      const questions = questionData ?? [];
+      const responseRows = responseData ?? [];
+
+      setForm({
+        ...formData,
+        questions,
       });
 
-    if (questionsError) {
-      console.error(questionsError);
+      setResponses(responseRows);
 
-      setForm(formData as Form);
-      setQuestions([]);
-      setError(questionsError.message);
+      /*
+       * Get the total response count.
+       *
+       * The page only displays the latest
+       * responses, so count separately.
+       */
+      const {
+        count,
+        error: countError,
+      } = await supabase
+        .from("responses")
+        .select("id", {
+          count: "exact",
+          head: true,
+        })
+        .eq("form_id", id);
+
+      if (countError) {
+        throw countError;
+      }
+
+      setStats({
+        responses: count ?? 0,
+        questions: questions.length,
+      });
+    } catch (err) {
+      console.error(
+        "Failed to fetch form:",
+        err,
+      );
+
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to load form.",
+      );
+    } finally {
       setLoading(false);
-      return;
     }
+  }, [id]);
 
-    setForm(formData as Form);
-    setQuestions((questionData ?? []) as Question[]);
-    setLoading(false);
-  }, [formId]);
+  const updateStatus = useCallback(
+    async (status: FormStatus) => {
+      const { error } = await supabase
+        .from("forms")
+        .update({
+          status,
+          published_at: status === "published" ? new Date().toISOString() : null,
+        })
+        .eq("id", id);
+
+      if (error) {
+        return {
+          error,
+        };
+      }      
+
+      fetchForm()
+
+      return {
+        error: null,
+      };
+    },
+    [],
+  );
+
+  const deleteForm = useCallback(
+    async () => {
+      const { error } = await supabase
+        .from("forms")
+        .delete()
+        .eq("id", id);
+
+      if (error) {
+        return {
+          error,
+        };
+      }
+
+      fetchForm()
+
+      return {
+        error: null,
+      };
+    },
+    [],
+  );
 
   useEffect(() => {
     fetchForm();
@@ -309,9 +219,12 @@ export function useForm(formId: string) {
 
   return {
     form,
-    questions,
+    responses,
+    stats,
     loading,
     error,
+    updateStatus,
+    deleteForm,
     refetch: fetchForm,
   };
 }

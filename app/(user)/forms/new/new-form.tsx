@@ -1,24 +1,48 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
-import { ArrowLeft, Save } from "lucide-react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { ArrowLeft, Save, Send } from "lucide-react";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { useTemplate } from "@/hooks/useTemplates";
 import { useFormBuilder } from "@/hooks/useFormBuilder";
 
 import { FormBuilder } from "@/components/users/form-builder";
+import { FormBuilderSkeleton } from "@/components/skeletons/form-builder-skeleton";
+import { NewFormHeader } from "@/components/users/headers";
 
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 
-export default function NewForm() {
-  const searchParams =
-    useSearchParams();
+import {
+  type crumb,
+  Crumbs,
+} from "@/components/ui/crumbs";
 
-  const templateSlug =
-    searchParams.get("template");
+const crumbs: crumb[] = [
+  {
+    name: "Dashboard",
+    href: "/dashboard",
+  },
+  {
+    name: "Forms",
+    href: "/forms",
+  },
+  {
+    name: "New",
+    href: "/forms/new",
+  },
+
+];
+
+export default function NewForm() {
+  const searchParams = useSearchParams();
+
+  const templateSlug = searchParams.get("template");
+  const [self, setSelf] = useState<"draft" | "publish" | null>(null);
+
+  const router = useRouter()
 
   const {
     template,
@@ -34,6 +58,7 @@ export default function NewForm() {
     addQuestion,
     updateQuestion,
     deleteQuestion,
+    duplicateQuestion,
     moveQuestion,
     saving,
     error,
@@ -54,11 +79,20 @@ export default function NewForm() {
       title: "Couldn't save form",
       message: error,
     });
-  }, [error, toast]);
+  }, [error]);
 
+  /*
+   * Save form.
+   */
   async function handleSave(
     status: "draft" | "published",
   ) {
+    setSelf(
+      status === "draft"
+        ? "draft"
+        : "publish",
+    );
+
     const result =
       await saveForm(status);
 
@@ -77,26 +111,24 @@ export default function NewForm() {
           : "Your form has been saved as a draft.",
     });
 
-    /*
-     * We'll navigate to the form
-     * management page after saving.
-     */
-    window.location.href = `/forms/${result.form.id}`;
+    router.push(
+      `/forms/${result.form.id}`,
+    );
   }
 
+  /*
+   * Template loading state.
+   */
   if (templateLoading) {
     return (
       <main className="min-h-screen">
-        <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:py-12">
-          <div className="animate-pulse space-y-5">
-            <div className="h-6 w-32 rounded bg-white/[0.05]" />
-
-            <div className="h-32 rounded-xl bg-white/[0.03]" />
-
-            <div className="h-64 rounded-xl bg-white/[0.03]" />
-
-            <div className="h-64 rounded-xl bg-white/[0.03]" />
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="mb-6">
+            <div className="h-7 w-48 rounded bg-white/[0.05]" />
+            <div className="mt-3 h-4 w-80 rounded bg-white/[0.03]" />
           </div>
+
+          <FormBuilderSkeleton />
         </div>
       </main>
     );
@@ -104,77 +136,112 @@ export default function NewForm() {
 
   return (
     <main className="min-h-screen">
-      {/* =====================================================
-          HEADER
-      ====================================================== */}
+      <Crumbs crumbs={crumbs} />
+      <div className="mx-auto max-w-7xl p-4 lg:p-8">
+        <section className="flex flex-col gap-2 sm:flex-row sm:items-end mb-6">
+          <div className="mr-auto">
+            <h1 className="text-xl font-semibold tracking-tight text-white sm:text-3xl">
+              New Form
+            </h1>
 
-      <header className="sticky top-0 z-30 border-b border-white/[0.06] bg-background/90 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
-          <Link
-            href="/forms"
-            className="inline-flex items-center gap-2 text-xs text-gray-600 transition hover:text-gray-300"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            Forms
-          </Link>
-
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              disabled={saving}
-              onClick={() =>
-                handleSave("draft")
-              }
-            >
-              <Save className="h-3.5 w-3.5" />
-              Save draft
-            </Button>
-
-            <Button
-              type="button"
-              variant="primary"
-              size="sm"
-              disabled={saving}
-              onClick={() =>
-                handleSave("published")
-              }
-            >
-              {saving
-                ? "Saving..."
-                : "Publish"}
-            </Button>
+            <p className="text-sm leading-6 text-gray-500">
+              Create, manage, and monitor your forms.
+            </p>
           </div>
-        </div>
-      </header>
 
-      {/* =====================================================
-          BUILDER
-      ====================================================== */}
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={saving}
+            onClick={() =>
+              handleSave("draft")
+            }
+          >
+            <Save className="h-3.5 w-3.5" />
 
-      <div className="p-4 lg:p-8">
+            <span className="hidden sm:inline">
+              {saving &&
+              self === "draft"
+                ? "Saving..."
+                : "Save draft"}
+            </span>
+
+            <span className="sm:hidden">
+              {saving &&
+              self === "draft"
+                ? "Saving..."
+                : "Save"}
+            </span>
+          </Button>
+
+          <Button
+            size="sm"
+            disabled={saving}
+            onClick={() =>
+              handleSave("published")
+            }
+          >
+            <Send className="h-3.5 w-3.5" />
+
+            {saving &&
+            self === "publish"
+              ? "Publishing..."
+              : "Publish"}
+          </Button>
+        </section>
+
+
         <FormBuilder
           title={title}
           description={description}
           questions={questions}
           onTitleChange={setTitle}
-          onDescriptionChange={
-            setDescription
-          }
-          onAddQuestion={
-            addQuestion
-          }
-          onUpdateQuestion={
-            updateQuestion
-          }
-          onDeleteQuestion={
-            deleteQuestion
-          }
-          onMoveQuestion={
-            moveQuestion
-          }
+          onDescriptionChange={setDescription}
+          onAddQuestion={addQuestion}
+          onUpdateQuestion={updateQuestion}
+          onDeleteQuestion={deleteQuestion}
+          onDuplicateQuestion={duplicateQuestion}
+          onMoveQuestion={moveQuestion}
         />
+        <div className="flex items-center justify-end gap-2 mt-6 w-full">
+          <Button
+            variant="secondary"
+            disabled={saving}
+            onClick={() =>
+              handleSave("draft")
+            }
+          >
+            <Save className="h-3.5 w-3.5" />
+
+            <span className="hidden sm:inline">
+              {saving &&
+              self === "draft"
+                ? "Saving..."
+                : "Save draft"}
+            </span>
+
+            <span className="sm:hidden">
+              {saving &&
+              self === "draft"
+                ? "Saving..."
+                : "Save"}
+            </span>
+          </Button>
+
+          <Button
+            disabled={saving}
+            onClick={() =>
+              handleSave("published")
+            }
+          >
+            <Send className="h-3.5 w-3.5" />
+
+            {saving &&
+            self === "publish"
+              ? "Publishing..."
+              : "Publish"}
+          </Button>
+        </div>
       </div>
     </main>
   );

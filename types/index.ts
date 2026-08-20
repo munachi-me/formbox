@@ -27,11 +27,17 @@ export interface Form {
 export interface QuestionOption {
   label: string;
   value: string;
-}
+};
+
+export interface RatingOptions {
+  min: number;
+  max: number;
+};
 
 export type QuestionType =
   | "short_text"
   | "long_text"
+  | "email"
   | "number"
   | "multiple_choice"
   | "checkbox"
@@ -46,7 +52,7 @@ export interface Question {
   description: string | null;
   required: boolean;
   position: number;
-  options: QuestionOption[] | null;
+  options: QuestionOption[] | RatingOptions | null;
   created_at: string;
 }
 

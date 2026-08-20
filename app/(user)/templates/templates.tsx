@@ -62,9 +62,8 @@ export default function Templates() {
 
   return (
     <main className="min-h-screen">
+      <Crumbs crumbs={crumbs} />
       <div className="mx-auto max-w-7xl p-4 lg:p-8">
-        <Crumbs crumbs={crumbs} />
-
         <TemplatesHeader />
 
         <div className="mt-10">

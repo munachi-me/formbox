@@ -42,7 +42,7 @@ function getRandomTemplates(num: number, array: Template[]): Template[] {
 
 
 export function useDashboard() {
-  const { forms, loading: fload } = useForms()
+  const { allForms: forms, loading: fload } = useForms()
   const { templates, loading: tload } = useTemplates()
   const [formsWithCount, setFormsWithCount] = useState<DashboardForm[]>([]);
   const [activities, setActivities] = useState<DashboardActivity[]>([]);
@@ -57,31 +57,19 @@ export function useDashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null);
 
-  const [formsLoad, setFormsLoad] = useState(true);
-  const [tempsLoad, setTempsLoad] = useState(true);
-  const [actsLoad, setActsLoad] = useState(true);
-  const [gstartLoad, setGstartLoad] = useState(true);
-
   /* =====================================================
      SELECTED TEMPLATES
   ====================================================== */
 
   const selectedTemplates = useMemo(()=>{
-    setTempsLoad(true) 
-
     const selected = getRandomTemplates(6, templates)
     if(!selected) return
-
-    setTempsLoad(false)
-    return selected
-  
+    return selected  
   }, [templates])
 
 
   const fetchDashboard = useCallback(async () => {
-    setFormsLoad(true)
-    setActsLoad(true)
-    setGstartLoad(true)
+    setLoading(true)
     setError(null);
 
     try {
@@ -109,14 +97,19 @@ export function useDashboard() {
           hasResponse: false,
         });
 
-        setLoading(false)
         return;
       } 
 
       /* =====================================================
          RESPONSE COUNTS
       ====================================================== */
+      if(fload || tload){
+        setLoading(true)
+        return
+      }
       const userForms = forms ?? [];
+      console.log(userForms)
+      console.log(forms)
 
       const formIds = userForms.map(
         (form) => form.id,
@@ -152,7 +145,6 @@ export function useDashboard() {
         }));
 
       setFormsWithCount(dashboardForms);
-      setFormsLoad(false)
 
       /* =====================================================
          GETTING STARTED
@@ -173,7 +165,6 @@ export function useDashboard() {
         hasPublishedForm,
         hasResponse,
       });
-      setGstartLoad(false)
 
       /* =====================================================
          ACTIVITY
@@ -229,7 +220,7 @@ export function useDashboard() {
       setActivities(
         generatedActivities.slice(0, 5),
       );
-      setActsLoad(false)
+
     } catch (err) {
       console.error(
         "Failed to fetch dashboard:",
@@ -242,12 +233,7 @@ export function useDashboard() {
           : "Failed to load dashboard.",
       );
     } finally {
-      setLoading(false);
       setLoading(false)
-      setFormsLoad(false)
-      setActsLoad(false)
-      setGstartLoad(false)
-      setError(false);
     }
   }, []);
 
@@ -261,10 +247,6 @@ export function useDashboard() {
     activities,
     gettingStarted,
     loading,
-    formsLoad,
-    tempsLoad,
-    actsLoad,
-    gstartLoad,
     error,
     refetch: fetchDashboard,
   };

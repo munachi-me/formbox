@@ -38,20 +38,17 @@ export default function Dashboard() {
     templates,
     activities,
     gettingStarted,
-    formsLoad,
-    tempsLoad,
-    actsLoad,
-    gstartLoad,
+    loading: dashboardLoading,
     error,
   } = useDashboard();
 
-  const loading = profileLoading;
+  const loading = profileLoading || dashboardLoading;
 
   const firstName = profile?.fullname?.split(' ')[0] ?? "there";
 
   if (error) {
     return (
-      <main className="min-h-screen">
+      <main className="min-h-screen flex items-center justify-center">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-6 text-red-500">
             <h2 className="text-lg font-semibold">Something went wrong</h2>
@@ -76,45 +73,31 @@ export default function Dashboard() {
 
   return (
     <main className="min-h-screen">
+      <Crumbs crumbs={crumbs} />
       <div className="mx-auto max-w-7xl p-4 lg:p-8">
-        <Crumbs crumbs={crumbs} />
-
         <DashboardHeader name={firstName} />
 
         <div className="mt-10 space-y-10">
           <QuickActions />
 
-          {formsLoad ? (
-            <FormsEmptyState
-              searching="Recent forms..."
-            />
-          ) : (
-            <RecentForms forms={forms} />
-          )}
-
-          {tempsLoad ? (
+          {dashboardLoading ? (<>
+            <FormsEmptyState searching="Recent forms..." />
             <TemplateGridSkeleton />
-          ) : (
+
+            <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+              <Skeleton />
+              <Skeleton />
+            </div>
+
+          </>) : (<>
+            <RecentForms forms={forms} />
             <TemplateSection templates={templates} />
-          )}
-
-          <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-            {actsLoad ? (
-              <Skeleton />
-            ) : (              
+            <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
               <RecentActivity activities={activities} />
-            )}
+              <GettingStarted data={gettingStarted} />
+            </div>
+          </>)}          
 
-            {gstartLoad ? (
-              <Skeleton />
-            ) : (              
-              gettingStarted && (
-                <GettingStarted data={gettingStarted} />
-              )
-            )}
-            
-            
-          </div>
         </div>
       </div>
     </main>

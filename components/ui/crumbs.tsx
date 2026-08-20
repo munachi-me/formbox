@@ -7,12 +7,12 @@ export type crumb = {
 
 export function Crumbs({crumbs}: crumb[]){
 	return(
-		<div className="text-gray-700 text-[10px] pb-4 w-full flex flew-wrap items-center gap-1 font-family-mono">
+		<div className="pt-4 px-4 lg:px-8 text-gray-300 text-xs w-full flex flew-wrap items-center gap-2">
 			{crumbs.map((c, i) => (
-				<div key={i} className="flex gap-1 items-center">
-					{i > 0 && '/'}
+				<div key={i} className="flex gap-2 items-center">
+					{i > 0 && <i>/</i>}
 					<Link href={c.href} key={i}
-					className="font-medium uppercase tracking-[0.14em] text-green-light hover:underline"
+					className="hover:text-green-light"
 					>
 						{c.name}
 					</Link>			

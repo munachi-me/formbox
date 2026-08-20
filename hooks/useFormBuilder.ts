@@ -10,10 +10,11 @@ import { supabase } from "@/lib/supabase/client";
 
 import type {
   TemplateWithQuestions,
+  QuestionType,
+  FormStatus,
 } from "@/types";
 
 import type {
-  FormBuilderData,
   FormBuilderQuestion,
 } from "@/types/form-builder";
 
@@ -22,16 +23,27 @@ import {
   templateQuestionToBuilderQuestion,
 } from "@/lib/forms/question-factory";
 
+import { generateShareId } from "@/lib/utils";
+
+interface ExistingFormData {
+  id: string;
+  title: string;
+  description: string | null;
+  questions: FormBuilderQuestion[];
+  published_at: string | null;
+}
+
 interface UseFormBuilderOptions {
-  template: TemplateWithQuestions | null;
+  template?: TemplateWithQuestions | null;
+  initialData?: ExistingFormData | null;
 }
 
 export function useFormBuilder({
-  template,
+  template = null,
+  initialData = null,
 }: UseFormBuilderOptions) {
   const [title, setTitle] = useState("");
-  const [description, setDescription] =
-    useState("");
+  const [description, setDescription] = useState("");
 
   const [questions, setQuestions] = useState<
     FormBuilderQuestion[]
@@ -42,9 +54,24 @@ export function useFormBuilder({
     useState<string | null>(null);
 
   /*
-   * Initialize from template.
+   * Initialize builder.
+   *
+   * Priority:
+   * 1. Existing form (edit mode)
+   * 2. Template (new form from template)
+   * 3. Empty form
    */
   useEffect(() => {
+    if (initialData) {
+      setTitle(initialData.title);
+      setDescription(
+        initialData.description ?? "",
+      );
+      setQuestions(initialData.questions);
+
+      return;
+    }
+
     if (!template) {
       setTitle("");
       setDescription("");
@@ -61,7 +88,7 @@ export function useFormBuilder({
     );
 
     setQuestions(
-      template.questions
+      [...template.questions]
         .sort(
           (a, b) =>
             a.position - b.position,
@@ -70,13 +97,13 @@ export function useFormBuilder({
           templateQuestionToBuilderQuestion,
         ),
     );
-  }, [template]);
+  }, [initialData, template]);
 
   /*
    * Add question.
    */
   const addQuestion = useCallback(
-    (type = "short_text") => {
+    (type: QuestionType = "short_text") => {
       setQuestions((current) => [
         ...current,
         createEmptyQuestion(type),
@@ -169,11 +196,59 @@ export function useFormBuilder({
   );
 
   /*
+   * Duplicate question.
+   */
+  const duplicateQuestion = useCallback(
+    (id: string) => {
+      setQuestions((current) => {
+        const index = current.findIndex(
+          (question) =>
+            question.id === id,
+        );
+
+        if (index === -1) {
+          return current;
+        }
+
+        const original = current[index];
+
+        const duplicate: FormBuilderQuestion = {
+          ...original,
+          id: crypto.randomUUID(),
+          label: `${original.label} (copy)`,
+          options: Array.isArray(
+            original.options,
+          )
+            ? original.options.map(
+                (option) => ({
+                  ...option,
+                }),
+              )
+            : {
+                ...original.options,
+              },
+        };
+
+        const next = [...current];
+
+        next.splice(
+          index + 1,
+          0,
+          duplicate,
+        );
+
+        return next;
+      });
+    },
+    [],
+  );
+
+  /*
    * Save form.
    */
   const saveForm = useCallback(
     async (
-      status: "draft" | "published" = "draft",
+      status: FormStatus = "draft",
     ) => {
       setSaving(true);
       setError(null);
@@ -185,7 +260,7 @@ export function useFormBuilder({
 
         if (!user) {
           throw new Error(
-            "You must be signed in to create a form.",
+            "You must be signed in to save a form.",
           );
         }
 
@@ -202,16 +277,89 @@ export function useFormBuilder({
         }
 
         /*
-         * Create share ID.
+         * Validate questions.
          */
-        const shareId =
-          crypto.randomUUID();
+        for (
+          let index = 0;
+          index < questions.length;
+          index++
+        ) {
+          const question =
+            questions[index];
+
+          if (!question.label.trim()) {
+            throw new Error(
+              `Question ${index + 1} has no label.`,
+            );
+          }
+
+          /*
+           * Choice questions.
+           */
+          if (
+            question.type ===
+              "multiple_choice" ||
+            question.type ===
+              "checkbox" ||
+            question.type === "dropdown"
+          ) {
+            if (
+              !Array.isArray(
+                question.options,
+              ) ||
+              question.options.length < 2
+            ) {
+              throw new Error(
+                `Question "${question.label}" needs at least 2 options.`,
+              );
+            }
+          }
+
+          /*
+           * Rating questions.
+           */
+          if (
+            question.type === "rating"
+          ) {
+            if (
+              Array.isArray(
+                question.options,
+              ) ||
+              !question.options ||
+              typeof question.options !==
+                "object" ||
+              !("min" in question.options) ||
+              !("max" in question.options)
+            ) {
+              throw new Error(
+                `Question "${question.label}" has invalid rating options.`,
+              );
+            }
+
+            if (
+              question.options.min >=
+              question.options.max
+            ) {
+              throw new Error(
+                `Question "${question.label}" must have a minimum lower than the maximum.`,
+              );
+            }
+          }
+        }
 
         /*
-         * Create form.
+         * =====================================================
+         * CREATE FORM
+         * =====================================================
          */
-        const { data: form, error: formError } =
-          await supabase
+        if (!initialData) {
+          const shareId =
+            generateShareId(21);
+
+          const {
+            data: form,
+            error: formError,
+          } = await supabase
             .from("forms")
             .insert({
               user_id: user.id,
@@ -229,30 +377,208 @@ export function useFormBuilder({
             .select()
             .single();
 
+          if (formError) {
+            throw formError;
+          }
+
+          const questionRows =
+            questions.map(
+              (question, index) => {
+                let options = null;
+
+                if (
+                  question.type ===
+                    "multiple_choice" ||
+                  question.type ===
+                    "checkbox" ||
+                  question.type ===
+                    "dropdown"
+                ) {
+                  if (
+                    Array.isArray(
+                      question.options,
+                    ) &&
+                    question.options.length >
+                      0
+                  ) {
+                    options =
+                      question.options;
+                  }
+                }
+
+                if (
+                  question.type === "rating"
+                ) {
+                  if (
+                    question.options &&
+                    !Array.isArray(
+                      question.options,
+                    )
+                  ) {
+                    options = {
+                      min:
+                        question.options.min,
+                      max:
+                        question.options.max,
+                    };
+                  }
+                }
+
+                return {
+                  form_id: form.id,
+                  type: question.type,
+                  label:
+                    question.label.trim(),
+                  description:
+                    question.description?.trim() ||
+                    null,
+                  required:
+                    question.required,
+                  position: index,
+                  options,
+                };
+              },
+            );
+
+          const {
+            error: questionsError,
+          } = await supabase
+            .from("questions")
+            .insert(questionRows);
+
+          if (questionsError) {
+            console.error(
+              "Questions insert error:",
+              questionsError,
+            );
+
+            await supabase
+              .from("forms")
+              .delete()
+              .eq("id", form.id);
+
+            throw new Error(
+              `Failed to save questions: ${questionsError.message}`,
+            );
+          }
+
+          return {
+            form,
+            error: null,
+          };
+        }
+
+        /*
+         * =====================================================
+         * EDIT FORM
+         * =====================================================
+         */
+
+        const {
+          data: form,
+          error: formError,
+        } = await supabase
+          .from("forms")
+          .update({
+            title: title.trim(),
+            description:
+              description.trim() ||
+              null,
+            status,
+            published_at:
+              status === "published"
+                ? initialData.published_at ??
+                  new Date().toISOString()
+                : null,
+          })
+          .eq("id", initialData.id)
+          .eq("user_id", user.id)
+          .select()
+          .single();
+
         if (formError) {
           throw formError;
         }
 
         /*
-         * Create questions.
+         * Remove the existing questions.
+         */
+        const {
+          error: deleteError,
+        } = await supabase
+          .from("questions")
+          .delete()
+          .eq(
+            "form_id",
+            initialData.id,
+          );
+
+        if (deleteError) {
+          throw new Error(
+            `Failed to update questions: ${deleteError.message}`,
+          );
+        }
+
+        /*
+         * Create the new question rows.
          */
         const questionRows =
           questions.map(
-            (question, index) => ({
-              form_id: form.id,
-              type: question.type,
-              label: question.label.trim(),
-              description:
-                question.description.trim() ||
-                null,
-              required:
-                question.required,
-              position: index,
-              options:
-                question.options.length > 0
-                  ? question.options
-                  : null,
-            }),
+            (question, index) => {
+              let options = null;
+
+              if (
+                question.type ===
+                  "multiple_choice" ||
+                question.type ===
+                  "checkbox" ||
+                question.type ===
+                  "dropdown"
+              ) {
+                if (
+                  Array.isArray(
+                    question.options,
+                  ) &&
+                  question.options.length >
+                    0
+                ) {
+                  options =
+                    question.options;
+                }
+              }
+
+              if (
+                question.type === "rating"
+              ) {
+                if (
+                  question.options &&
+                  !Array.isArray(
+                    question.options,
+                  )
+                ) {
+                  options = {
+                    min:
+                      question.options.min,
+                    max:
+                      question.options.max,
+                  };
+                }
+              }
+
+              return {
+                form_id: form.id,
+                type: question.type,
+                label:
+                  question.label.trim(),
+                description:
+                  question.description?.trim() ||
+                  null,
+                required:
+                  question.required,
+                position: index,
+                options,
+              };
+            },
           );
 
         const {
@@ -262,16 +588,9 @@ export function useFormBuilder({
           .insert(questionRows);
 
         if (questionsError) {
-          /*
-           * If questions fail, remove
-           * the form we just created.
-           */
-          await supabase
-            .from("forms")
-            .delete()
-            .eq("id", form.id);
-
-          throw questionsError;
+          throw new Error(
+            `Failed to save questions: ${questionsError.message}`,
+          );
         }
 
         return {
@@ -299,7 +618,12 @@ export function useFormBuilder({
         setSaving(false);
       }
     },
-    [title, description, questions],
+    [
+      title,
+      description,
+      questions,
+      initialData,
+    ],
   );
 
   return {
@@ -310,10 +634,12 @@ export function useFormBuilder({
     setDescription,
 
     questions,
+
     addQuestion,
     updateQuestion,
     deleteQuestion,
     moveQuestion,
+    duplicateQuestion,
 
     saving,
     error,

@@ -18,8 +18,9 @@ interface ButtonProps
 }
 
 const variants: Record<ButtonVariant, string> = {
+  
   primary:
-    "bg-purple text-white shadow-lg shadow-purple/10 hover:bg-purple-light",
+    "bg-purple text-white shadow-lg shadow-purple/10 transition hover:bg-purple-light hover:shadow-purple/20",
 
   secondary:
     "border border-white/[0.08] bg-white/[0.03] text-gray-200 hover:bg-white/[0.06] hover:text-white",
@@ -51,7 +52,7 @@ export function Button({
     gap-2 rounded-lg
     font-medium
     transition-all duration-200
-    disabled:pointer-events-none
+    disabled:pointer-events-not-allowed
     disabled:opacity-50
     ${variants[variant]}
     ${sizes[size]}

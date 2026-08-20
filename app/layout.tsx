@@ -1,27 +1,8 @@
 import type { Metadata } from "next";
-import {
-  Poppins,
-  JetBrains_Mono,
-} from "next/font/google";
-
 import "./globals.css";
 
 import { ToastProvider } from "@/components/ui/toast";
 import { AuthProvider } from "@/providers/auth-provider";
-
-const poppins = Poppins({
-  variable: "--font-poppins",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  display: "swap",
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: {
@@ -44,9 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${poppins.variable} ${jetbrainsMono.variable} antialiased font-sans`}
-      >
+      <body>
         <AuthProvider>
           <ToastProvider>
             {children}

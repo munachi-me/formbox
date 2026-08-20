@@ -16,26 +16,31 @@ export function createEmptyQuestion(
   type: QuestionType = "short_text",
 ): FormBuilderQuestion {
   return {
-    id: createId(),
+    id: crypto.randomUUID(),
     type,
     label: "",
     description: "",
     required: false,
     options:
-      type === "multiple_choice" ||
-      type === "checkbox" ||
-      type === "dropdown"
-        ? [
-            {
-              label: "Option 1",
-              value: "option-1",
-            },
-            {
-              label: "Option 2",
-              value: "option-2",
-            },
-          ]
-        : [],
+      type === "rating"
+        ? {
+            min: 1,
+            max: 5,
+          }
+        : type === "multiple_choice" ||
+            type === "checkbox" ||
+            type === "dropdown"
+          ? [
+              {
+                label: "Option 1",
+                value: "option-1",
+              },
+              {
+                label: "Option 2",
+                value: "option-2",
+              },
+            ]
+          : [],
   };
 }
 
@@ -49,11 +54,6 @@ export function templateQuestionToBuilderQuestion(
     description:
       question.description ?? "",
     required: question.required,
-    options:
-      question.options?.map(
-        (option) => ({
-          ...option,
-        }),
-      ) ?? [],
+    options: question.options ?? [],
   };
 }

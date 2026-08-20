@@ -22,9 +22,9 @@ export function TemplateGrid({
 
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      {templates.map((template) => (
+      {templates.map((template, i) => (
         <TemplateCard
-          key={template.id}
+          key={i}
           template={template}
         />
       ))}
